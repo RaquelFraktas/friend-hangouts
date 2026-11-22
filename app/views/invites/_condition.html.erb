@@ -1,0 +1,29 @@
+<turbo-frame id="condition-<%= window.id %>">
+  <div class="condition condition-<%= window.condition_status %>">
+    <% case window.condition_status %>
+    <% when "pending" %>
+      <div data-controller="poll" data-poll-url-value="<%= invite_path(@friend.invite_token) %>">
+        <p><%= status_chip("pending") %> The scout is reading your note…</p>
+        <p class="muted">Until it's confirmed you count as <em>Maybe</em> for times this window covers.</p>
+      </div>
+    <% when "suggested", "needs_review" %>
+      <p><%= status_chip(window.condition_status) %>
+        Scout suggests: <strong><%= window.suggestion&.describe || "nothing" %></strong></p>
+      <p class="muted"><%= window.scout_explanation %></p>
+      <p class="unresolved">Unresolved — you count as <em>Maybe</em> (not a confirmed Yes) for these times until you confirm or correct it.</p>
+      <div class="actions">
+        <% unless window.suggestion.nil? || window.suggestion.empty? %>
+          <%= button_to (window.condition_status == "suggested" ? "Looks right" : "Use this"), condition_invite_window_path(@friend.invite_token, window),
+                method: :patch, params: { decision: "confirm", note_version: window.note_version }, class: "btn btn-small", form: { data: { turbo_frame: "_top" } } %>
+        <% end %>
+        <%= button_to "It's just a note", condition_invite_window_path(@friend.invite_token, window),
+              method: :patch, params: { decision: "just_note", note_version: window.note_version }, class: "btn btn-small btn-ghost", form: { data: { turbo_frame: "_top" } } %>
+      </div>
+      <%= render "correction_form", window: window, initial: window.suggestion %>
+    <% when "confirmed" %>
+      <p><%= status_chip("confirmed") %> <strong><%= window.confirmed_condition.describe %></strong>
+        <span class="muted">· <%= condition_source_label(window) %></span></p>
+      <%= render "correction_form", window: window, initial: window.confirmed_condition, label: "Change" %>
+    <% end %>
+  </div>
+</turbo-frame>

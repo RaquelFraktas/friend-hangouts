@@ -1,0 +1,21 @@
+<% content_for :title, "Group Planner" %>
+<header class="hero">
+  <h1>Group Planner</h1>
+  <p>Everyone enters their own availability; the planner finds the best times and venues.</p>
+</header>
+
+<% if @hangouts.any? %>
+  <section class="card">
+    <h2>Local demo dashboards</h2>
+    <p class="muted">Shown only in development. Organizer and invite links are private tokens.</p>
+    <ul class="plain">
+      <% @hangouts.each do |hangout| %>
+        <li><%= link_to hangout.name, organizer_path(hangout.organizer_token) %>
+          <span class="muted">· <%= day_label(hangout.starts_on) %> – <%= day_label(hangout.ends_on) %></span></li>
+      <% end %>
+    </ul>
+  </section>
+<% else %>
+  <section class="card"><p>Open the private link your organizer shared with you.</p>
+    <p class="muted">Running locally? <code>bin/rails db:seed</code> then reload.</p></section>
+<% end %>

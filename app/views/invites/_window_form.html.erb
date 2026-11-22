@@ -1,0 +1,28 @@
+<%= form_with model: window, url: url, method: method, scope: :availability_window, class: "window-form", data: { turbo_frame: "_top" } do |f| %>
+  <% if window.errors.any? %>
+    <ul class="errors" role="alert">
+      <% window.errors.full_messages.each do |message| %><li><%= message %></li><% end %>
+    </ul>
+  <% end %>
+  <div class="grid">
+    <label>Date
+      <%= f.date_field :date, min: window.friend.hangout.starts_on, max: window.friend.hangout.ends_on, required: true %>
+    </label>
+    <label>Start
+      <%= f.time_field :start_time, value: window.start_time, step: 900, required: true %>
+    </label>
+    <label>End
+      <%= f.time_field :end_time, value: window.end_time, step: 900, required: true %>
+    </label>
+  </div>
+  <fieldset class="segmented">
+    <legend>Can you make it?</legend>
+    <% AvailabilityWindow::STATUSES.each do |status| %>
+      <label class="seg"><%= f.radio_button :status, status %> <span><%= status.capitalize %></span></label>
+    <% end %>
+  </fieldset>
+  <label>Note <span class="muted">(optional — e.g. “Brooklyn only”, “step-free access”, “cheap”)</span>
+    <%= f.text_field :note, maxlength: 200, placeholder: "Brooklyn only" %>
+  </label>
+  <%= f.submit submit, class: "btn" %>
+<% end %>

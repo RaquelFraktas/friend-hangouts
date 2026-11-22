@@ -1,0 +1,19 @@
+<article class="window <%= 'window-conflict' if window.conflicts_with_unavailable_day? %>" id="window-<%= window.id %>">
+  <div class="window-head">
+    <div>
+      <strong><%= window.start_minute && window.end_minute ? window.time_label : "—" %></strong>
+      <%= answer_chip(window.status) %>
+      <% if window.conflicts_with_unavailable_day? %><span class="chip chip-no">ignored: day marked unavailable</span><% end %>
+    </div>
+    <%= button_to "Remove", invite_window_path(@friend.invite_token, window), method: :delete, class: "btn btn-small btn-ghost",
+          form: { data: { turbo_confirm: "Remove this window?" } } %>
+  </div>
+  <% if window.note.present? %>
+    <p class="note">Note: “<%= window.note %>”</p>
+    <%= render "condition", window: window %>
+  <% end %>
+  <details <%= "open" if window.errors.any? %>>
+    <summary>Edit</summary>
+    <%= render "window_form", window: window, url: invite_window_path(@friend.invite_token, window), method: :patch, submit: "Save changes" %>
+  </details>
+</article>

@@ -1,0 +1,30 @@
+<% initial ||= Condition.new %>
+<% initial = Condition.new if initial.nil? %>
+<% label ||= "Correct it" %>
+<details class="correction">
+  <summary><%= label %></summary>
+  <%= form_with url: condition_invite_window_path(@friend.invite_token, window), method: :patch, data: { turbo_frame: "_top" } do |f| %>
+    <%= hidden_field_tag :decision, "correct" %>
+    <%= hidden_field_tag :note_version, window.note_version %>
+    <fieldset><legend>Only in</legend>
+      <% Condition::AREAS.each do |area| %>
+        <label class="check"><%= check_box_tag "condition[areas][]", area, initial.areas.include?(area), id: nil %> <%= area %></label>
+      <% end %>
+    </fieldset>
+    <fieldset><legend>Not in</legend>
+      <% Condition::AREAS.each do |area| %>
+        <label class="check"><%= check_box_tag "condition[exclude_areas][]", area, initial.exclude_areas.include?(area), id: nil %> <%= area %></label>
+      <% end %>
+    </fieldset>
+    <div class="grid">
+      <label>Budget
+        <%= select_tag "condition[max_price]", options_for_select([ [ "Any", "" ] ] + Condition::PRICE_LABELS.map { |k, v| [ "#{v} or cheaper", k ] }, initial.max_price) %>
+      </label>
+      <label>Setting
+        <%= select_tag "condition[setting]", options_for_select([ [ "Any", "" ], [ "Indoor", "indoor" ], [ "Outdoor", "outdoor" ] ], initial.setting) %>
+      </label>
+    </div>
+    <label class="check"><%= check_box_tag "condition[accessible]", "1", initial.accessible, id: nil %> Needs step-free access</label>
+    <%= f.submit "Save condition", class: "btn btn-small" %>
+  <% end %>
+</details>

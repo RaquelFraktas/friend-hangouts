@@ -1,0 +1,52 @@
+<% content_for :title, "#{@friend.name} · #{@hangout.name}" %>
+<header class="hero">
+  <p class="eyebrow">Private invite for <%= @friend.name %></p>
+  <h1><%= @hangout.name %></h1>
+  <p><%= day_label(@hangout.starts_on) %> – <%= day_label(@hangout.ends_on) %> ·
+     at least <%= ClockTime.duration_label(@hangout.min_duration_minutes) %> ·
+     times in <strong><%= @hangout.time_zone %></strong> (<%= @hangout.zone_abbreviation %>)</p>
+  <p class="muted">Add every window you could make. Anything you leave blank counts as <em>Unknown</em>, not No.
+    Mark a day unavailable to say a clear No.</p>
+</header>
+
+<section class="card" id="add-window">
+  <h2>Add availability</h2>
+  <%= render "window_form", window: @new_window, url: invite_windows_path(@friend.invite_token), method: :post, submit: "Add window" %>
+</section>
+
+<% @hangout.dates.each do |date| %>
+  <% windows = @friend.windows_on(date) %>
+  <% unavailable = @friend.unavailable_on?(date) %>
+  <section class="card day <%= 'day-unavailable' if unavailable %>" id="day-<%= date %>">
+    <div class="day-head">
+      <h2><%= day_label(date) %></h2>
+      <% if unavailable %>
+        <%= button_to "Undo unavailable", invite_day_path(@friend.invite_token, date: date), method: :delete, class: "btn btn-small btn-ghost" %>
+      <% else %>
+        <%= button_to "I can't make this day", invite_day_path(@friend.invite_token, date: date), class: "btn btn-small btn-ghost" %>
+      <% end %>
+    </div>
+
+    <% if unavailable && windows.any? %>
+      <p class="conflict" role="alert"><strong>Conflict:</strong> you marked <%= date.strftime("%A") %> unavailable but also added
+        <%= pluralize(windows.size, "window") %>. The planner ignores these windows until you remove them or undo “unavailable”.</p>
+    <% elsif unavailable %>
+      <p class="muted">You're marked unavailable — counts as No for every option this day.</p>
+    <% elsif windows.empty? %>
+      <p class="muted">Nothing entered — counts as Unknown. <%= link_to "Add a time", invite_path(@friend.invite_token, date: date, anchor: "add-window") %></p>
+    <% end %>
+
+    <% windows.each do |window| %>
+      <%= render "window", window: (@editing_window&.id == window.id ? @editing_window : window) %>
+    <% end %>
+  </section>
+<% end %>
+
+<% outside = @friend.availability_windows.select(&:outside_hangout_range?) %>
+<% if outside.any? %>
+  <section class="card">
+    <h2>Outside the hangout dates</h2>
+    <p class="conflict">The organizer changed the dates; these windows no longer count.</p>
+    <% outside.each { |window| %><%= render "window", window: window %><% } %>
+  </section>
+<% end %>
