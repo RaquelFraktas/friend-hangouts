@@ -43,4 +43,4 @@ group :development do
   gem "web-console"
 end
 
-gem "sidekiq", "~> 7.3"
+gem "sidekiq", "~> 8.1"
